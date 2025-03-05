@@ -7,7 +7,7 @@ struct Home: View {
     var body: some View {
         NavigationStack {
             ScrollView(.vertical) {
-                LazyVStack(spacing: 16) {
+                VStack(spacing: 16) {
                     ForEach(viewModel.books) { book in
                         HStack {
                             VStack(alignment: .leading) {
@@ -36,7 +36,7 @@ struct Home: View {
             }
             .navigationTitle("Books")
             .blur(radius: viewModel.isLoadingBooks ? 3 : 0)
-            .task { await viewModel.loadBooks() }
+            .onAppear { viewModel.loadBooks() }
             .overlay {
                 if viewModel.isLoadingBooks {
                     LottieView(animation: .named("bookAnimation"))

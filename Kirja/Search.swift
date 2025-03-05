@@ -2,7 +2,7 @@ import SwiftUI
 import AsyncAlgorithms
 
 final class NetworkingClient {
-    weak var monitoring: Monitoring?
+    var monitoring: Monitoring?
 }
 
 final class Monitoring {
@@ -14,39 +14,25 @@ final class Monitoring {
 }
 
 @Observable @MainActor final class SearchViewModel {
-    var query = "" {
-        willSet {
-            continuation.yield(newValue)
-        }
-    }
+    var query = ""
     let monitoring: Monitoring
     let networkingClient: NetworkingClient
     let allBooks: [Book]
     
-    var filteredBooks = [Book]()
+    var filteredBooks: [Book] {
+        guard !query.isEmpty else { return allBooks }
         
-    
-    private let (textStream, continuation) = AsyncStream.makeStream(of: String.self)
+        return allBooks.filter { book in
+            book.title.lowercased().contains(query.lowercased())
+        }
+    }
 
     init(books: [Book]) {
         self.allBooks = books
-        self.filteredBooks = allBooks
         let networkingClient = NetworkingClient()
         self.monitoring = Monitoring(client: networkingClient)
         networkingClient.monitoring = monitoring
         self.networkingClient = networkingClient
-        
-        Task {
-            for await text in textStream.removeDuplicates().debounce(for: .milliseconds(300)) {
-                if text.isEmpty {
-                    filteredBooks = allBooks
-                } else {
-                    filteredBooks = allBooks.filter { book in
-                        book.title.lowercased().contains(text.lowercased())
-                    }
-                }
-            }
-        }
     }
     
 }
