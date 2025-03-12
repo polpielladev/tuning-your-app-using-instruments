@@ -7,7 +7,7 @@ struct Home: View {
     var body: some View {
         NavigationStack {
             ScrollView(.vertical) {
-                VStack(spacing: 16) {
+                LazyVStack(spacing: 16) {
                     ForEach(viewModel.books) { book in
                         HStack {
                             VStack(alignment: .leading) {
