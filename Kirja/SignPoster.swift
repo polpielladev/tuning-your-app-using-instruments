@@ -4,7 +4,7 @@ extension Logger {
     static let repository = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "repository")
 }
 
-final class SignPoster {
+final class SignPoster: Sendable {
     private let logger: Logger
     private let signposter: OSSignposter
     
