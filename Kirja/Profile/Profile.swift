@@ -2,56 +2,6 @@ import SwiftUI
 import Foundation
 import SwiftData
 
-public struct ProfileModel: Sendable, Identifiable {
-    public var id: String
-    public var photo: Data?
-    public var name: String
-
-    public init(id: String, photo: Data?, name: String) {
-        self.id = id
-        self.photo = photo
-        self.name = name
-    }
-
-    public static let empty: ProfileModel = ProfileModel(id: UUID().uuidString, photo: nil, name: "You")
-}
-
-
-@Observable @MainActor final class ProfileViewModel {
-    var isEditingProfile = false
-    var tempProfile = ProfileModel.empty
-    var profile = ProfileModel.empty
-    var isSaving = false
-
-    let dataAccess: SwiftDataManager<StorageProfile>
-
-    init() {
-        self.dataAccess = SwiftDataManager<StorageProfile>(modelContainer: ModelContainer.local)
-
-        Task {
-            if let profile = try? await dataAccess.get().first {
-                self.profile = profile
-            }
-        }
-    }
-
-    public func confirm() async {
-        isSaving = true
-        defer { isSaving = false }
-        do {
-            let currentProfiles = try await dataAccess.get()
-
-            if currentProfiles.isEmpty {
-                _ = try await dataAccess.create(profile)
-            } else {
-                _ = try await dataAccess.update(profile)
-            }
-            profile = tempProfile
-            isEditingProfile = false
-        } catch {}
-    }
-}
-
 struct Profile: View {
     @State private var viewModel = ProfileViewModel()
     @FocusState private var isFocused
