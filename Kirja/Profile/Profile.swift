@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import SwiftData
 
 public struct ProfileModel: Sendable, Identifiable {
     public var id: String
@@ -20,11 +21,34 @@ public struct ProfileModel: Sendable, Identifiable {
     var isEditingProfile = false
     var tempProfile = ProfileModel.empty
     var profile = ProfileModel.empty
+    var isSaving = false
 
-    func confirm() {
-        profile = tempProfile
+    let dataAccess: SwiftDataManager<StorageProfile>
 
-        isEditingProfile = false
+    init() {
+        self.dataAccess = SwiftDataManager<StorageProfile>(modelContainer: ModelContainer.local)
+
+        Task {
+            if let profile = try? await dataAccess.get().first {
+                self.profile = profile
+            }
+        }
+    }
+
+    public func confirm() async {
+        isSaving = true
+        defer { isSaving = false }
+        do {
+            let currentProfiles = try await dataAccess.get()
+
+            if currentProfiles.isEmpty {
+                _ = try await dataAccess.create(profile)
+            } else {
+                _ = try await dataAccess.update(profile)
+            }
+            profile = tempProfile
+            isEditingProfile = false
+        } catch {}
     }
 }
 
@@ -43,7 +67,9 @@ struct Profile: View {
                         .focused($isFocused)
                         .textContentType(.givenName)
                         .onSubmit {
-                            viewModel.confirm()
+                            Task {
+                                await viewModel.confirm()
+                            }
                         }
                         .opacity(viewModel.isEditingProfile ? 1 : 0)
                 } else {
@@ -69,7 +95,13 @@ struct Profile: View {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(role: .confirm) {
                             Task {
-                                viewModel.confirm()
+                                await viewModel.confirm()
+                            }
+                        } label: {
+                            if viewModel.isSaving {
+                                ProgressView()
+                            } else {
+                                Image(systemName: "checkmark")
                             }
                         }
                         .tint(.accentColor)
@@ -78,6 +110,7 @@ struct Profile: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
                             viewModel.isEditingProfile.toggle()
+                            viewModel.tempProfile = viewModel.profile
                             isFocused = viewModel.isEditingProfile
                         }) {
                             Image(systemName: viewModel.isEditingProfile ? "checkmark" : "pencil")

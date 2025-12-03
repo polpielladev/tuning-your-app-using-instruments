@@ -1,0 +1,1 @@
+typealias CurrentSchema = StorageSchemaV1

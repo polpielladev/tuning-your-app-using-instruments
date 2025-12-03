@@ -1,0 +1,1 @@
+typealias StorageProfile = CurrentSchema.Profile
