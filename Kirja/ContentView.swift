@@ -11,11 +11,25 @@ import SwiftUI
     var shareAnalytics: Bool = false
 }
 
+enum KirjaTab {
+    case home
+    case profile
+}
+
 struct ContentView: View {
+    @State var selectedTab = KirjaTab.home
     @State var settings = GlobalSettings()
     
     var body: some View {
-        Home()
+        TabView(selection: $selectedTab) {
+            Tab("Home", systemImage: "house.fill", value: KirjaTab.home) {
+                Home()
+            }
+
+            Tab("Profile", systemImage: "person.fill", value: KirjaTab.profile) {
+                Profile()
+            }
+        }
     }
 }
 
