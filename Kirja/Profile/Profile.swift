@@ -20,6 +20,12 @@ public struct ProfileModel: Sendable, Identifiable {
     var isEditingProfile = false
     var tempProfile = ProfileModel.empty
     var profile = ProfileModel.empty
+
+    func confirm() {
+        profile = tempProfile
+
+        isEditingProfile = false
+    }
 }
 
 struct Profile: View {
@@ -29,7 +35,7 @@ struct Profile: View {
     var body: some View {
         NavigationStack {
             VStack {
-    //            ProfilePicture(profile: manager.editProfile ? $tempProfile : $manager.profile, isEditable: manager.editProfile)
+                ProfilePicture(profile: viewModel.isEditingProfile ? $viewModel.tempProfile : $viewModel.profile, isEditable: viewModel.isEditingProfile)
 
                 if viewModel.isEditingProfile {
                     TextField("Name", text: $viewModel.tempProfile.name)
@@ -37,6 +43,7 @@ struct Profile: View {
                         .focused($isFocused)
                         .textContentType(.givenName)
                         .onSubmit {
+                            viewModel.confirm()
                         }
                         .opacity(viewModel.isEditingProfile ? 1 : 0)
                 } else {
@@ -62,8 +69,7 @@ struct Profile: View {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(role: .confirm) {
                             Task {
-                                viewModel.isEditingProfile.toggle()
-                                isFocused = false
+                                viewModel.confirm()
                             }
                         }
                         .tint(.accentColor)
