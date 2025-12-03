@@ -4,7 +4,7 @@ extension Logger {
     static let repository = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "repository")
 }
 
-final class SignPoster {
+final class SignPoster: Sendable {
     private let logger: Logger
     private let signposter: OSSignposter
     
@@ -17,6 +17,14 @@ final class SignPoster {
         let signpostID = signposter.makeSignpostID()
         let state = signposter.beginInterval(name, id: signpostID)
         let result = await action()
+        signposter.endInterval(name, state)
+        return result
+    }
+
+    func measure<T>(_ action: @Sendable @autoclosure () -> T, name: StaticString) -> T {
+        let signpostID = signposter.makeSignpostID()
+        let state = signposter.beginInterval(name, id: signpostID)
+        let result = action()
         signposter.endInterval(name, state)
         return result
     }
