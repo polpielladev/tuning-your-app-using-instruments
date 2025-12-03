@@ -1,6 +1,7 @@
 import SwiftUI
 import Foundation
 import SwiftData
+import OSLog
 
 struct Profile: View {
     @State private var viewModel = ProfileViewModel()
@@ -32,6 +33,15 @@ struct Profile: View {
             }
             .frame(maxWidth: 440)
             .multilineTextAlignment(.center)
+            .onChange(of: viewModel.isEditingProfile) { oldValue, newValue in
+                if oldValue != newValue {
+                    if newValue {
+                        Logger.repository.log("Editing Started")
+                    } else {
+                        Logger.repository.log("Editing Finished")
+                    }
+                }
+            }
             .toolbar {
                 if viewModel.isEditingProfile {
                     ToolbarItem(placement: .topBarLeading) {
