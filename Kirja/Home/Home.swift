@@ -36,7 +36,7 @@ struct Home: View {
             }
             .navigationTitle("Books")
             .blur(radius: viewModel.isLoadingBooks ? 3 : 0)
-            .task { await viewModel.loadBooks() }
+            .onAppear { viewModel.loadBooks() }
             .overlay {
                 if viewModel.isLoadingBooks {
                     LottieView(animation: .named("bookAnimation"))

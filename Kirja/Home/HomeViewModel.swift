@@ -2,39 +2,37 @@ import Foundation
 
 enum BookLoader {
     static let decoder = JSONDecoder()
-    
-    static func loadBooks(from file: String) async -> [Book] {
-        let task = Task.detached {
-            var books = [Book]()
-            for _ in 0..<100 {
-                books = decoder.loadFile([Book].self, from: file)
-            }
-            return books
+
+    // Example to simulate a heavy loading operation
+    static func loadBooks(from file: String) -> [Book] {
+        var books = [Book]()
+        for _ in 0..<100 {
+            books = decoder.loadFile([Book].self, from: file)
         }
-        return await task.value
+        return books
     }
 }
 
 final class BookRepository: Sendable {
-    func loadRecommendations() async -> [Book] {
-        await BookLoader.loadBooks(from: "books")
+    func loadRecommendations() -> [Book] {
+        BookLoader.loadBooks(from: "books")
     }
     
-    func loadReadingList() async -> [Book] {
-        await BookLoader.loadBooks(from: "books_reading_list")
+    func loadReadingList() -> [Book] {
+        BookLoader.loadBooks(from: "books_reading_list")
 
     }
     
-    func loadTrendingBooks() async -> [Book] {
-        await BookLoader.loadBooks(from: "books_recommendations")
+    func loadTrendingBooks() -> [Book] {
+        BookLoader.loadBooks(from: "books_recommendations")
     }
     
-    func loadAllBooks() async -> [Book] {
-        async let recommendations = loadRecommendations()
-        async let readingList = loadReadingList()
-        async let trending = loadTrendingBooks()
+    func loadAllBooks() -> [Book] {
+        let recommendations = loadRecommendations()
+        let readingList = loadReadingList()
+        let trending = loadTrendingBooks()
         
-        return await recommendations + readingList + trending
+        return recommendations + readingList + trending
     }
 }
 
@@ -44,10 +42,9 @@ final class BookRepository: Sendable {
     var isLoadingBooks = true
     let bookRepository = BookRepository()
     
-    func loadBooks() async {
-        let signposter = SignPoster(logger: .repository)
+    func loadBooks() {
         isLoadingBooks = true
-        self.books = await signposter.measure(await bookRepository.loadAllBooks(), name: "Book Loading")
+        self.books = bookRepository.loadAllBooks()
         isLoadingBooks = false
     }
 }
