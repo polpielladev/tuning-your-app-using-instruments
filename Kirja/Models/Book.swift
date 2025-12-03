@@ -1,6 +1,6 @@
 import Foundation
 
-struct Book: Identifiable, Codable, Sendable {
+struct Book: Identifiable, Codable, Sendable, Equatable {
     let id: UUID
     let title: String
     let author: String

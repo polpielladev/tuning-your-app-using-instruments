@@ -52,6 +52,7 @@ final class Monitoring {
 }
 
 struct Search: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var viewModel: SearchViewModel
     
     init(books: [Book]) {
@@ -59,12 +60,7 @@ struct Search: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            TextField("Search for books", text: $viewModel.query)
-                .textFieldStyle(.roundedBorder)
-                .frame(maxWidth: .infinity)
-                .padding()
-            
+        NavigationStack {
             ScrollView(.vertical) {
                 LazyVStack(spacing: 16) {
                     ForEach(viewModel.filteredBooks) { book in
@@ -77,14 +73,23 @@ struct Search: View {
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
-                            Spacer()
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding()
             }
-            
-            Spacer()
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Search")
+            .animation(.easeInOut, value: viewModel.filteredBooks)
+            .searchable(text: $viewModel.query)
         }
     }
 }

@@ -30,7 +30,7 @@ struct Home: View {
             .toolbar {
                 ToolbarItem(placement: .automatic) {
                     Button(action: { viewModel.showSearch = true }) {
-                        Image(systemName: "magnifyingglass.circle.fill")
+                        Image(systemName: "magnifyingglass")
                     }
                 }
             }
